@@ -55,6 +55,28 @@ input, select, textarea {
     padding: .55rem .7rem;
 }
 
+.deadline-info {
+    margin: 0 0 1rem;
+    color: #ffe7c2;
+    background: linear-gradient(135deg, rgba(255, 187, 74, 0.22), rgba(255, 187, 74, 0.05));
+    border: 1px solid rgba(255, 187, 74, 0.5);
+    border-radius: .75rem;
+    padding: .75rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+.deadline-badge {
+    background: #f4a81c;
+    color: #1b1201;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: .2rem .6rem;
+    font-size: .8rem;
+}
+
 .weekend-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));
@@ -68,9 +90,22 @@ input, select, textarea {
     padding: 1rem;
 }
 
+.weekend-card.best-weekend {
+    border-color: #f1d18b;
+    box-shadow: 0 0 0 1px rgba(241, 209, 139, 0.5), 0 8px 18px rgba(241, 209, 139, 0.15);
+}
+
 .weekend-card h2 {
     margin-top: 0;
     font-size: 1.05rem;
+}
+
+
+.best-weekend-label {
+    margin: 0 0 .75rem;
+    color: #ffe4a3;
+    font-size: .9rem;
+    font-weight: 700;
 }
 
 .names {
@@ -90,6 +125,11 @@ input, select, textarea {
 
 .name-chip.ok { background: var(--ok); }
 .name-chip.not-ok { background: var(--notok); }
+
+.name-chip:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
 
 .modal-backdrop {
     position: fixed;

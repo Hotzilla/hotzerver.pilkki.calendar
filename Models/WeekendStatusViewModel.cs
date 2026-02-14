@@ -4,6 +4,9 @@ public class WeekendStatusViewModel
 {
     public required DateOnly Friday { get; set; }
     public required DateOnly Sunday { get; set; }
+    public required DateOnly DeadlineDate { get; set; }
+    public required bool IsDeadlineReached { get; set; }
+    public required int NotOkCount { get; set; }
     public List<string> HolidayTitles { get; set; } = [];
     public required List<ParticipantStatusViewModel> Participants { get; set; }
 }
