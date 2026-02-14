@@ -13,7 +13,7 @@
     <section class="filters">
         <label>
             Vuosi
-            <input type="number" min="2024" max="2100" @bind="SelectedYear" @bind:after="LoadDataAsync" />
+            <input type="number" value="@SelectedYear" disabled />
         </label>
 
         <label>
@@ -25,6 +25,11 @@
         </label>
     </section>
 
+    @if (Weekends.Count > 0)
+    {
+        <p class="deadline-info">Määräaika vastausten antamiselle: <strong>@Weekends[0].DeadlineDate.ToString("dd.MM.yyyy")</strong></p>
+    }
+
     @if (!string.IsNullOrWhiteSpace(ErrorMessage))
     {
         <div class="error">@ErrorMessage</div>
@@ -33,13 +38,19 @@
     <section class="weekend-grid">
         @foreach (var weekend in Weekends)
         {
-            <article class="weekend-card">
+            <article class="weekend-card @(IsBestWeekend(weekend) ? "best-weekend" : string.Empty)">
                 <h2>@WeekendTitle(weekend)</h2>
+                <p class="weekend-meta">Ei käy -merkintöjä: <strong>@weekend.NotOkCount</strong></p>
+                @if (IsBestWeekend(weekend))
+                {
+                    <p class="best-weekend-label">Vähiten EI käy -merkintöjä</p>
+                }
                 <div class="names">
                     @foreach (var person in weekend.Participants)
                     {
                         <button type="button" class="name-chip @(person.IsAvailable ? "ok" : "not-ok")"
                                 title="@TooltipText(person)"
+                                disabled="@weekend.IsDeadlineReached"
                                 @onclick="() => OpenMarkDialog(weekend.Friday, person)">
                             @person.FirstName
                         </button>
@@ -86,7 +97,7 @@
 }
 
 @code {
-    private int SelectedYear { get; set; } = DateTime.Now.Year;
+    private int SelectedYear { get; set; } = 2026;
     private TripSeason SelectedSeason { get; set; } = TripSeason.PilkkiI;
     private List<WeekendStatusViewModel> Weekends { get; set; } = [];
     private string? ErrorMessage { get; set; }
@@ -122,6 +133,11 @@
         }
 
         return $"{dateRange} ({string.Join(", ", weekend.HolidayTitles)})";
+    }
+
+    private bool IsBestWeekend(WeekendStatusViewModel weekend)
+    {
+        return Weekends.Count != 0 && weekend.NotOkCount == Weekends.Min(x => x.NotOkCount);
     }
 
     private string TooltipText(ParticipantStatusViewModel person)
