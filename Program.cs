@@ -18,6 +18,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<PilkkiDbContext>();
     db.Database.EnsureCreated();
+    DbSchemaUpdater.EnsureLatestSchema(db);
     SeedData.EnsureSeeded(db);
 }
 

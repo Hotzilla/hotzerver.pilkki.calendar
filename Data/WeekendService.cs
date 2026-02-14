@@ -34,7 +34,8 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
                     FirstName = p.FirstName,
                     LastName = p.LastName,
                     IsAvailable = un is null,
-                    Comment = un?.Comment
+                    Comment = un?.Comment,
+                    Priority = un?.Priority ?? UnavailabilityPriority.MaybeNegotiable
                 };
             }).ToList();
             var notOkCount = statuses.Count(x => !x.IsAvailable);
@@ -65,7 +66,8 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
         DateOnly weekendStart,
         bool isAvailable,
         string lastname,
-        string? comment)
+        string? comment,
+        UnavailabilityPriority priority)
     {
         var participant = await db.Participants.FirstOrDefaultAsync(x => x.Id == participantId);
         if (participant is null)
@@ -110,12 +112,14 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
                 Season = season,
                 WeekendStart = weekendStart,
                 Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim(),
+                Priority = priority,
                 UpdatedAtUtc = DateTime.UtcNow
             });
         }
         else
         {
             existing.Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim();
+            existing.Priority = priority;
             existing.UpdatedAtUtc = DateTime.UtcNow;
         }
 
