@@ -28,7 +28,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.MapRazorComponents<App>()
+app.MapRazorComponents<hotzerver.pilkki.calendar.Components.App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
