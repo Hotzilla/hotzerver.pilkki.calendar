@@ -9,6 +9,7 @@ builder.WebHost.UseStaticWebAssets();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddDbContext<PilkkiDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHttpClient<HolidayService>();
 builder.Services.AddScoped<WeekendService>();
 
 var app = builder.Build();
