@@ -38,7 +38,7 @@
                 <div class="names">
                     @foreach (var person in weekend.Participants)
                     {
-                        <button class="name-chip @(person.IsAvailable ? "ok" : "not-ok")"
+                        <button type="button" class="name-chip @(person.IsAvailable ? "ok" : "not-ok")"
                                 title="@TooltipText(person)"
                                 @onclick="() => OpenMarkDialog(weekend.Friday, person)">
                             @person.FirstName
