@@ -13,7 +13,12 @@
     <section class="filters">
         <label>
             Vuosi
-            <input type="number" min="2026" max="2100" @bind="SelectedYear" @bind:after="LoadDataAsync" />
+            <select @bind="SelectedYear" @bind:after="LoadDataAsync">
+                @foreach (var year in YearOptions)
+                {
+                    <option value="@year">@year</option>
+                }
+            </select>
         </label>
 
         <label>
@@ -145,6 +150,8 @@
         [UnavailabilityPriority.NeverEver] = "No - En tule perkele ikinä yhteenkään pilkkiin jos tähän iskette"
     };
 
+
+    private static readonly IReadOnlyList<int> YearOptions = Enumerable.Range(2026, 75).ToList();
     private int SelectedYear { get; set; } = 2026;
     private TripSeason SelectedSeason { get; set; } = TripSeason.PilkkiI;
     private List<WeekendStatusViewModel> Weekends { get; set; } = [];
