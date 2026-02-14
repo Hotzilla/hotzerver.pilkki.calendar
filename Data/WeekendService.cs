@@ -3,7 +3,7 @@ using hotzerver.pilkki.calendar.Models;
 
 namespace hotzerver.pilkki.calendar.Data;
 
-public class WeekendService(PilkkiDbContext db)
+public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
 {
     public async Task<List<Participant>> GetParticipantsAsync()
     {
@@ -17,6 +17,7 @@ public class WeekendService(PilkkiDbContext db)
         var unavailable = await db.Unavailabilities
             .Where(x => x.Year == year && x.Season == season)
             .ToListAsync();
+        var holidays = await holidayService.GetHolidaysAsync();
 
         var result = new List<WeekendStatusViewModel>();
         foreach (var friday in weekends)
@@ -39,6 +40,11 @@ public class WeekendService(PilkkiDbContext db)
             {
                 Friday = friday,
                 Sunday = sunday,
+                HolidayTitles = holidays
+                    .Where(h => h.StartDate <= sunday && (h.EndDate ?? h.StartDate) >= friday)
+                    .Select(h => h.Title)
+                    .Distinct()
+                    .ToList(),
                 Participants = statuses
             });
         }
