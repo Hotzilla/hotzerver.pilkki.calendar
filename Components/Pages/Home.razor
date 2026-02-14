@@ -84,6 +84,14 @@
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
+                @if (!string.IsNullOrWhiteSpace(SelectedPerson.Comment))
+                {
+                    <div class="existing-comment">
+                        <span class="existing-comment-title">Nykyinen kommentti</span>
+                        <p>@SelectedPerson.Comment</p>
+                    </div>
+                }
+                
                 <label>
                     Sukunimi (pakollinen)
                     <InputText @bind-Value="Form.LastName" />
@@ -91,13 +99,7 @@
 
                 @if (!IsMarkingOk)
                 {
-                    @if (!string.IsNullOrWhiteSpace(SelectedPerson.Comment))
-                    {
-                        <div class="existing-comment">
-                            <span class="existing-comment-title">Nykyinen kommentti</span>
-                            <p>@SelectedPerson.Comment</p>
-                        </div>
-                    }
+
 
                     <label>
                         Kommentti (valinnainen)
