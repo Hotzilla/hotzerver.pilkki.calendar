@@ -8,7 +8,7 @@ public static class DbSchemaUpdater
     {
         if (!ColumnExists(db, "Unavailabilities", "Priority"))
         {
-            db.Database.ExecuteSqlRaw("ALTER TABLE Unavailabilities ADD COLUMN Priority INTEGER NOT NULL DEFAULT 0;");
+            db.Database.ExecuteSqlRaw("ALTER TABLE Unavailabilities ADD COLUMN Priority INTEGER NOT NULL DEFAULT 1;");
         }
     }
 

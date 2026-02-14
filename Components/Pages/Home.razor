@@ -150,7 +150,6 @@
         [UnavailabilityPriority.NeverEver] = "No - En tule perkele ikinä yhteenkään pilkkiin jos tähän iskette"
     };
 
-
     private static readonly IReadOnlyList<int> YearOptions = Enumerable.Range(2026, 75).ToList();
     private int SelectedYear { get; set; } = 2026;
     private TripSeason SelectedSeason { get; set; } = TripSeason.PilkkiI;
@@ -225,7 +224,7 @@
 
         Form = new MarkAvailabilityForm
         {
-            IsAvailable = false,
+            IsAvailable = person.IsAvailable,
             Comment = person.Comment,
             Priority = person.Priority
         };
@@ -276,6 +275,6 @@
         public string LastName { get; set; } = string.Empty;
         public bool IsAvailable { get; set; }
         public string? Comment { get; set; }
-        public UnavailabilityPriority Priority { get; set; } = UnavailabilityPriority.MaybeNegotiable;
+        public UnavailabilityPriority Priority { get; set; } = UnavailabilityPriority.NotNegotiable;
     }
 }

@@ -25,6 +25,6 @@ public class PilkkiDbContext(DbContextOptions<PilkkiDbContext> options) : DbCont
 
         modelBuilder.Entity<Unavailability>()
             .Property(u => u.Priority)
-            .HasDefaultValue(UnavailabilityPriority.MaybeNegotiable);
+            .HasDefaultValue(UnavailabilityPriority.NotNegotiable);
     }
 }
