@@ -127,7 +127,7 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
     {
         var start = season == TripSeason.PilkkiI
             ? new DateOnly(year, 2, 1)
-            : new DateOnly(year, 10, 1);
+            : new DateOnly(year, 9, 1);
 
         var end = season == TripSeason.PilkkiI
             ? new DateOnly(year, 4, 30)
