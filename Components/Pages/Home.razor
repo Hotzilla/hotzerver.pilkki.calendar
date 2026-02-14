@@ -91,6 +91,14 @@
 
                 @if (!IsMarkingOk)
                 {
+                    @if (!string.IsNullOrWhiteSpace(SelectedPerson.Comment))
+                    {
+                        <div class="existing-comment">
+                            <span class="existing-comment-title">Nykyinen kommentti</span>
+                            <p>@SelectedPerson.Comment</p>
+                        </div>
+                    }
+
                     <label>
                         Kommentti (valinnainen)
                         <InputTextArea @bind-Value="Form.Comment" />
