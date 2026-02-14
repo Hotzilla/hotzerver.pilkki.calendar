@@ -75,7 +75,7 @@
 {
     <div class="modal-backdrop" @onclick="CloseDialog">
         <div class="modal" @onclick:stopPropagation="true">
-            <h3>@DialogTitle</h3>
+            <h3>Päivitä osallistumisen tila</h3>
             <p>
                 <strong>@SelectedPerson.FirstName</strong> / @SelectedWeekend?.ToString("dd.MM.yyyy")
             </p>
@@ -96,15 +96,31 @@
                         <p>@SelectedPerson.Comment</p>
                     </div>
                 }
-                
+
                 <label>
                     Sukunimi (pakollinen)
                     <InputText @bind-Value="Form.LastName" />
                 </label>
 
-                @if (!IsMarkingOk)
-                {
+                <label>
+                    Osallistuminen
+                    <InputSelect @bind-Value="Form.IsAvailable">
+                        <option value="true">OK</option>
+                        <option value="false">EI käy</option>
+                    </InputSelect>
+                </label>
 
+                @if (!Form.IsAvailable)
+                {
+                    <label>
+                        Prioriteetti
+                        <InputSelect @bind-Value="Form.Priority">
+                            @foreach (var option in PriorityOptions)
+                            {
+                                <option value="@option.Key">@option.Value</option>
+                            }
+                        </InputSelect>
+                    </label>
 
                     <label>
                         Kommentti (valinnainen)
@@ -114,7 +130,7 @@
 
                 <div class="actions">
                     <button type="button" class="secondary" @onclick="CloseDialog">Peruuta</button>
-                    <button type="submit" class="primary">@DialogSaveButtonText</button>
+                    <button type="submit" class="primary">Tallenna</button>
                 </div>
             </EditForm>
         </div>
@@ -122,6 +138,13 @@
 }
 
 @code {
+    private static readonly Dictionary<UnavailabilityPriority, string> PriorityOptions = new()
+    {
+        [UnavailabilityPriority.MaybeNegotiable] = "Ei - Ehkä liukama varaa",
+        [UnavailabilityPriority.NotNegotiable] = "No - Ei neuvoteltavissa",
+        [UnavailabilityPriority.NeverEver] = "No - En tule perkele ikinä yhteenkään pilkkiin jos tähän iskette"
+    };
+
     private int SelectedYear { get; set; } = 2026;
     private TripSeason SelectedSeason { get; set; } = TripSeason.PilkkiI;
     private List<WeekendStatusViewModel> Weekends { get; set; } = [];
@@ -130,12 +153,8 @@
     private bool DialogOpen { get; set; }
     private DateOnly? SelectedWeekend { get; set; }
     private ParticipantStatusViewModel? SelectedPerson { get; set; }
-    private bool IsMarkingOk { get; set; }
     private string? DialogErrorMessage { get; set; }
     private MarkAvailabilityForm Form { get; set; } = new();
-
-    private string DialogTitle => IsMarkingOk ? "Merkitse KÄY" : "Merkitse EI käy";
-    private string DialogSaveButtonText => IsMarkingOk ? "Tallenna KÄY" : "Tallenna EI käy";
 
     protected override async Task OnInitializedAsync()
     {
@@ -148,7 +167,6 @@
         Weekends = await WeekendService.GetWeekendStatusesAsync(SelectedYear, SelectedSeason);
         StateHasChanged();
     }
-
 
     private static string WeekendTitle(WeekendStatusViewModel weekend)
     {
@@ -184,20 +202,25 @@
             return $"{person.FirstName}: käy";
         }
 
-        return string.IsNullOrWhiteSpace(person.Comment)
-            ? $"{person.FirstName}: ei käy"
-            : $"{person.FirstName}: ei käy – {person.Comment}";
+        var priorityText = PriorityOptions[person.Priority];
+        if (string.IsNullOrWhiteSpace(person.Comment))
+        {
+            return $"{person.FirstName}: ei käy – {priorityText}";
+        }
+
+        return $"{person.FirstName}: ei käy – {priorityText} – {person.Comment}";
     }
 
     private void OpenMarkDialog(DateOnly weekend, ParticipantStatusViewModel person)
     {
         SelectedWeekend = weekend;
         SelectedPerson = person;
-        IsMarkingOk = !person.IsAvailable;
 
         Form = new MarkAvailabilityForm
         {
-            Comment = IsMarkingOk ? null : person.Comment
+            IsAvailable = false,
+            Comment = person.Comment,
+            Priority = person.Priority
         };
 
         DialogOpen = true;
@@ -210,7 +233,6 @@
         DialogOpen = false;
         SelectedPerson = null;
         SelectedWeekend = null;
-        IsMarkingOk = false;
         DialogErrorMessage = null;
     }
 
@@ -226,9 +248,10 @@
             SelectedYear,
             SelectedSeason,
             SelectedWeekend.Value,
-            IsMarkingOk,
+            Form.IsAvailable,
             Form.LastName,
-            Form.Comment);
+            Form.Comment,
+            Form.Priority);
 
         if (error is not null)
         {
@@ -244,6 +267,8 @@
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Sukunimi on pakollinen")]
         public string LastName { get; set; } = string.Empty;
+        public bool IsAvailable { get; set; }
         public string? Comment { get; set; }
+        public UnavailabilityPriority Priority { get; set; } = UnavailabilityPriority.MaybeNegotiable;
     }
 }

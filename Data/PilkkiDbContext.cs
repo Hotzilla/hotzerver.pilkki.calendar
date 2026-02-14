@@ -22,5 +22,9 @@ public class PilkkiDbContext(DbContextOptions<PilkkiDbContext> options) : DbCont
             .HasOne(u => u.Participant)
             .WithMany()
             .HasForeignKey(u => u.ParticipantId);
+
+        modelBuilder.Entity<Unavailability>()
+            .Property(u => u.Priority)
+            .HasDefaultValue(UnavailabilityPriority.MaybeNegotiable);
     }
 }
