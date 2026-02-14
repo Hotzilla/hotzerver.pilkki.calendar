@@ -26,7 +26,12 @@ public class HolidayService(HttpClient httpClient)
             }
 
             using var stream = await httpClient.GetStreamAsync(HolidaysUrl);
-            var response = await JsonSerializer.DeserializeAsync<List<HolidayApiResponse>>(stream);
+            var response = await JsonSerializer.DeserializeAsync<List<HolidayApiResponse>>(
+                stream,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
 
             _cache = response?
                 .Where(x => !string.IsNullOrWhiteSpace(x.Date) && !string.IsNullOrWhiteSpace(x.Title))
@@ -57,9 +62,13 @@ public class HolidayService(HttpClient httpClient)
 
     private class HolidayApiResponse
     {
+        [JsonPropertyName("date")]
         public string? Date { get; set; }
+
         [JsonPropertyName("end_date")]
         public string? EndDate { get; set; }
+
+        [JsonPropertyName("title")]
         public string? Title { get; set; }
     }
 }
