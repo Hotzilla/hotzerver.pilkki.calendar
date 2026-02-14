@@ -13,6 +13,8 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
     public async Task<List<WeekendStatusViewModel>> GetWeekendStatusesAsync(int year, TripSeason season)
     {
         var weekends = BuildWeekends(year, season);
+        var deadlineDate = CalculateDeadlineDate(weekends);
+        var isDeadlineReached = DateOnly.FromDateTime(DateTime.UtcNow) >= deadlineDate;
         var participants = await db.Participants.OrderBy(x => x.FirstName).ToListAsync();
         var unavailable = await db.Unavailabilities
             .Where(x => x.Year == year && x.Season == season)
@@ -35,11 +37,15 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
                     Comment = un?.Comment
                 };
             }).ToList();
+            var notOkCount = statuses.Count(x => !x.IsAvailable);
 
             result.Add(new WeekendStatusViewModel
             {
                 Friday = friday,
                 Sunday = sunday,
+                DeadlineDate = deadlineDate,
+                IsDeadlineReached = isDeadlineReached,
+                NotOkCount = notOkCount,
                 HolidayTitles = holidays
                     .Where(h => h.StartDate <= sunday && (h.EndDate ?? h.StartDate) >= friday)
                     .Select(h => h.Title)
@@ -70,6 +76,12 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
         if (!string.Equals(participant.LastName.Trim(), lastname.Trim(), StringComparison.OrdinalIgnoreCase))
         {
             return "Sukunimi ei täsmää.";
+        }
+
+        var deadlineDate = CalculateDeadlineDate(BuildWeekends(year, season));
+        if (DateOnly.FromDateTime(DateTime.UtcNow) >= deadlineDate)
+        {
+            return $"Määräaika ({deadlineDate:dd.MM.yyyy}) on umpeutunut. Viikonloppuja ei voi enää muokata.";
         }
 
         var existing = await db.Unavailabilities.FirstOrDefaultAsync(x =>
@@ -133,5 +145,11 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
         }
 
         return list;
+    }
+
+    private static DateOnly CalculateDeadlineDate(List<DateOnly> weekends)
+    {
+        var firstWeekend = weekends.Min();
+        return firstWeekend.AddMonths(-5);
     }
 }
