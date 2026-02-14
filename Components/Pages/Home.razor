@@ -92,6 +92,13 @@
                     </div>
                 }
                 
+=======
+                @if (!string.IsNullOrWhiteSpace(DialogErrorMessage))
+                {
+                    <div class="error">@DialogErrorMessage</div>
+                }
+
+>>>>>>> a6936b82a9a93b6bc225fe4fd35fdaf5634b1e2a
                 <label>
                     Sukunimi (pakollinen)
                     <InputText @bind-Value="Form.LastName" />
