@@ -1,0 +1,113 @@
+using Microsoft.EntityFrameworkCore;
+using hotzerver.pilkki.calendar.Models;
+
+namespace hotzerver.pilkki.calendar.Data;
+
+public class WeekendService(PilkkiDbContext db)
+{
+    public async Task<List<Participant>> GetParticipantsAsync()
+    {
+        return await db.Participants.OrderBy(x => x.FirstName).ToListAsync();
+    }
+
+    public async Task<List<WeekendStatusViewModel>> GetWeekendStatusesAsync(int year, TripSeason season)
+    {
+        var weekends = BuildWeekends(year, season);
+        var participants = await db.Participants.OrderBy(x => x.FirstName).ToListAsync();
+        var unavailable = await db.Unavailabilities
+            .Where(x => x.Year == year && x.Season == season)
+            .ToListAsync();
+
+        var result = new List<WeekendStatusViewModel>();
+        foreach (var friday in weekends)
+        {
+            var sunday = friday.AddDays(2);
+            var statuses = participants.Select(p =>
+            {
+                var un = unavailable.FirstOrDefault(x => x.ParticipantId == p.Id && x.WeekendStart == friday);
+                return new ParticipantStatusViewModel
+                {
+                    ParticipantId = p.Id,
+                    FirstName = p.FirstName,
+                    LastName = p.LastName,
+                    IsAvailable = un is null,
+                    Comment = un?.Comment
+                };
+            }).ToList();
+
+            result.Add(new WeekendStatusViewModel
+            {
+                Friday = friday,
+                Sunday = sunday,
+                Participants = statuses
+            });
+        }
+
+        return result;
+    }
+
+    public async Task<string?> MarkNotAvailableAsync(int participantId, int year, TripSeason season, DateOnly weekendStart, string lastname, string? comment)
+    {
+        var participant = await db.Participants.FirstOrDefaultAsync(x => x.Id == participantId);
+        if (participant is null)
+        {
+            return "Osallistujaa ei löytynyt.";
+        }
+
+        if (!string.Equals(participant.LastName.Trim(), lastname.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return "Sukunimi ei täsmää.";
+        }
+
+        var existing = await db.Unavailabilities.FirstOrDefaultAsync(x =>
+            x.ParticipantId == participantId &&
+            x.Year == year &&
+            x.Season == season &&
+            x.WeekendStart == weekendStart);
+
+        if (existing is null)
+        {
+            db.Unavailabilities.Add(new Unavailability
+            {
+                ParticipantId = participantId,
+                Year = year,
+                Season = season,
+                WeekendStart = weekendStart,
+                Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim(),
+                UpdatedAtUtc = DateTime.UtcNow
+            });
+        }
+        else
+        {
+            existing.Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim();
+            existing.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        await db.SaveChangesAsync();
+        return null;
+    }
+
+    private static List<DateOnly> BuildWeekends(int year, TripSeason season)
+    {
+        var start = season == TripSeason.PilkkiI
+            ? new DateOnly(year, 2, 1)
+            : new DateOnly(year, 10, 1);
+
+        var end = season == TripSeason.PilkkiI
+            ? new DateOnly(year, 4, 30)
+            : new DateOnly(year, 11, 30);
+
+        while (start.DayOfWeek != DayOfWeek.Friday)
+        {
+            start = start.AddDays(1);
+        }
+
+        var list = new List<DateOnly>();
+        for (var current = start; current <= end; current = current.AddDays(7))
+        {
+            list.Add(current);
+        }
+
+        return list;
+    }
+}
