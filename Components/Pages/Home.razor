@@ -54,12 +54,12 @@
 {
     <div class="modal-backdrop" @onclick="CloseDialog">
         <div class="modal" @onclick:stopPropagation="true">
-            <h3>Merkitse EI käy</h3>
+            <h3>@DialogTitle</h3>
             <p>
                 <strong>@SelectedPerson.FirstName</strong> / @SelectedWeekend?.ToString("dd.MM.yyyy")
             </p>
 
-            <EditForm Model="Form" OnValidSubmit="SubmitNotAvailable">
+            <EditForm Model="Form" OnValidSubmit="SubmitAvailabilityChange">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
@@ -68,14 +68,17 @@
                     <InputText @bind-Value="Form.LastName" />
                 </label>
 
-                <label>
-                    Kommentti (valinnainen)
-                    <InputTextArea @bind-Value="Form.Comment" />
-                </label>
+                @if (!IsMarkingOk)
+                {
+                    <label>
+                        Kommentti (valinnainen)
+                        <InputTextArea @bind-Value="Form.Comment" />
+                    </label>
+                }
 
                 <div class="actions">
                     <button type="button" class="secondary" @onclick="CloseDialog">Peruuta</button>
-                    <button type="submit" class="primary">Tallenna EI käy</button>
+                    <button type="submit" class="primary">@DialogSaveButtonText</button>
                 </div>
             </EditForm>
         </div>
@@ -91,7 +94,11 @@
     private bool DialogOpen { get; set; }
     private DateOnly? SelectedWeekend { get; set; }
     private ParticipantStatusViewModel? SelectedPerson { get; set; }
-    private MarkNotOkForm Form { get; set; } = new();
+    private bool IsMarkingOk { get; set; }
+    private MarkAvailabilityForm Form { get; set; } = new();
+
+    private string DialogTitle => IsMarkingOk ? "Merkitse KÄY" : "Merkitse EI käy";
+    private string DialogSaveButtonText => IsMarkingOk ? "Tallenna KÄY" : "Tallenna EI käy";
 
     protected override async Task OnInitializedAsync()
     {
@@ -121,7 +128,13 @@
     {
         SelectedWeekend = weekend;
         SelectedPerson = person;
-        Form = new MarkNotOkForm();
+        IsMarkingOk = !person.IsAvailable;
+
+        Form = new MarkAvailabilityForm
+        {
+            Comment = IsMarkingOk ? null : person.Comment
+        };
+
         DialogOpen = true;
         ErrorMessage = null;
     }
@@ -131,20 +144,22 @@
         DialogOpen = false;
         SelectedPerson = null;
         SelectedWeekend = null;
+        IsMarkingOk = false;
     }
 
-    private async Task SubmitNotAvailable()
+    private async Task SubmitAvailabilityChange()
     {
         if (SelectedPerson is null || SelectedWeekend is null)
         {
             return;
         }
 
-        var error = await WeekendService.MarkNotAvailableAsync(
+        var error = await WeekendService.SetAvailabilityAsync(
             SelectedPerson.ParticipantId,
             SelectedYear,
             SelectedSeason,
             SelectedWeekend.Value,
+            IsMarkingOk,
             Form.LastName,
             Form.Comment);
 
@@ -158,7 +173,7 @@
         await LoadDataAsync();
     }
 
-    private class MarkNotOkForm
+    private class MarkAvailabilityForm
     {
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Sukunimi on pakollinen")]
         public string LastName { get; set; } = string.Empty;
