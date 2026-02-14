@@ -159,6 +159,29 @@ input, select, textarea {
     width: min(460px, 100%);
 }
 
+
+.existing-comment {
+    margin-top: .35rem;
+    margin-bottom: .75rem;
+    background: #121a2a;
+    border: 1px solid #3a4766;
+    border-radius: .6rem;
+    padding: .65rem .75rem;
+}
+
+.existing-comment-title {
+    display: block;
+    color: var(--muted);
+    font-size: .8rem;
+    margin-bottom: .2rem;
+}
+
+.existing-comment p {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 .actions {
     margin-top: 1rem;
     display: flex;
