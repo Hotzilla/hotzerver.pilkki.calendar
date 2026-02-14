@@ -77,6 +77,17 @@ input, select, textarea {
     font-size: .8rem;
 }
 
+.deadline-info.deadline-reached {
+    color: #ffd8df;
+    background: linear-gradient(135deg, rgba(204, 51, 79, 0.3), rgba(204, 51, 79, 0.08));
+    border-color: rgba(204, 51, 79, 0.7);
+}
+
+.deadline-info.deadline-reached .deadline-badge {
+    background: #cc334f;
+    color: #fff4f6;
+}
+
 .weekend-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));

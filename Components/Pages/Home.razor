@@ -27,10 +27,17 @@
 
     @if (Weekends.Count > 0)
     {
-        <div class="deadline-info">
+        <div class="deadline-info @(Weekends[0].IsDeadlineReached ? "deadline-reached" : string.Empty)">
             <span class="deadline-badge">Määräaika</span>
             <strong>@Weekends[0].DeadlineDate.ToString("dd.MM.yyyy")</strong>
-            <span>OK/EI käy -vastaukset tulee antaa tähän mennessä.</span>
+            @if (Weekends[0].IsDeadlineReached)
+            {
+                <span>Määräaika on saavutettu. OK/EI käy -vastauksia ei voi enää muokata.</span>
+            }
+            else
+            {
+                <span>OK/EI käy -vastaukset tulee antaa tähän mennessä.</span>
+            }
         </div>
     }
 
