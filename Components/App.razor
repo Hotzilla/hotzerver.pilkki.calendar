@@ -5,14 +5,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    <link rel="stylesheet" href="app.css" />
-    <link rel="stylesheet" href="hotzerver.pilkki.calendar.styles.css" />
+    <ResourcePreloader />
+    <link rel="stylesheet" href='@Assets["app.css"]' />
+    <ImportMap />
     <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 
 <body>
     <Routes @rendermode="InteractiveServer" />
-    <script src="_framework/blazor.web.js"></script>
+    <script src='@Assets["_framework/blazor.web.js"]'></script>
 </body>
 
 </html>
