@@ -1,0 +1,167 @@
+@page "/"
+@rendermode InteractiveServer
+@inject hotzerver.pilkki.calendar.Data.WeekendService WeekendService
+
+<PageTitle>Pilkki viikonloput</PageTitle>
+
+<div class="page">
+    <header class="top-header">
+        <h1>Pilkki viikonloppusuunnittelu</h1>
+        <p>Valitse paras viikonloppu 9–10 hengen pilkkireissulle (perjantai–sunnuntai).</p>
+    </header>
+
+    <section class="filters">
+        <label>
+            Vuosi
+            <input type="number" min="2024" max="2100" @bind="SelectedYear" @bind:after="LoadDataAsync" />
+        </label>
+
+        <label>
+            Reissu
+            <select @bind="SelectedSeason" @bind:after="LoadDataAsync">
+                <option value="@TripSeason.PilkkiI">Pilkki I/@SelectedYear (helmi–huhti)</option>
+                <option value="@TripSeason.PilkkiII">Pilkki II/@SelectedYear (loka–marras)</option>
+            </select>
+        </label>
+    </section>
+
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <div class="error">@ErrorMessage</div>
+    }
+
+    <section class="weekend-grid">
+        @foreach (var weekend in Weekends)
+        {
+            <article class="weekend-card">
+                <h2>@weekend.Friday.ToString("dd.MM.") – @weekend.Sunday.ToString("dd.MM.yyyy")</h2>
+                <div class="names">
+                    @foreach (var person in weekend.Participants)
+                    {
+                        <button class="name-chip @(person.IsAvailable ? "ok" : "not-ok")"
+                                title="@TooltipText(person)"
+                                @onclick="() => OpenMarkDialog(weekend.Friday, person)">
+                            @person.FirstName
+                        </button>
+                    }
+                </div>
+            </article>
+        }
+    </section>
+</div>
+
+@if (DialogOpen && SelectedPerson is not null)
+{
+    <div class="modal-backdrop" @onclick="CloseDialog">
+        <div class="modal" @onclick:stopPropagation="true">
+            <h3>Merkitse EI käy</h3>
+            <p>
+                <strong>@SelectedPerson.FirstName</strong> / @SelectedWeekend?.ToString("dd.MM.yyyy")
+            </p>
+
+            <EditForm Model="Form" OnValidSubmit="SubmitNotAvailable">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <label>
+                    Sukunimi (pakollinen)
+                    <InputText @bind-Value="Form.LastName" />
+                </label>
+
+                <label>
+                    Kommentti (valinnainen)
+                    <InputTextArea @bind-Value="Form.Comment" />
+                </label>
+
+                <div class="actions">
+                    <button type="button" class="secondary" @onclick="CloseDialog">Peruuta</button>
+                    <button type="submit" class="primary">Tallenna EI käy</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    private int SelectedYear { get; set; } = DateTime.Now.Year;
+    private TripSeason SelectedSeason { get; set; } = TripSeason.PilkkiI;
+    private List<WeekendStatusViewModel> Weekends { get; set; } = [];
+    private string? ErrorMessage { get; set; }
+
+    private bool DialogOpen { get; set; }
+    private DateOnly? SelectedWeekend { get; set; }
+    private ParticipantStatusViewModel? SelectedPerson { get; set; }
+    private MarkNotOkForm Form { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        ErrorMessage = null;
+        Weekends = await WeekendService.GetWeekendStatusesAsync(SelectedYear, SelectedSeason);
+        StateHasChanged();
+    }
+
+    private string TooltipText(ParticipantStatusViewModel person)
+    {
+        if (person.IsAvailable)
+        {
+            return $"{person.FirstName}: käy";
+        }
+
+        return string.IsNullOrWhiteSpace(person.Comment)
+            ? $"{person.FirstName}: ei käy"
+            : $"{person.FirstName}: ei käy – {person.Comment}";
+    }
+
+    private void OpenMarkDialog(DateOnly weekend, ParticipantStatusViewModel person)
+    {
+        SelectedWeekend = weekend;
+        SelectedPerson = person;
+        Form = new MarkNotOkForm();
+        DialogOpen = true;
+        ErrorMessage = null;
+    }
+
+    private void CloseDialog()
+    {
+        DialogOpen = false;
+        SelectedPerson = null;
+        SelectedWeekend = null;
+    }
+
+    private async Task SubmitNotAvailable()
+    {
+        if (SelectedPerson is null || SelectedWeekend is null)
+        {
+            return;
+        }
+
+        var error = await WeekendService.MarkNotAvailableAsync(
+            SelectedPerson.ParticipantId,
+            SelectedYear,
+            SelectedSeason,
+            SelectedWeekend.Value,
+            Form.LastName,
+            Form.Comment);
+
+        if (error is not null)
+        {
+            ErrorMessage = error;
+            return;
+        }
+
+        CloseDialog();
+        await LoadDataAsync();
+    }
+
+    private class MarkNotOkForm
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Sukunimi on pakollinen")]
+        public string LastName { get; set; } = string.Empty;
+        public string? Comment { get; set; }
+    }
+}
