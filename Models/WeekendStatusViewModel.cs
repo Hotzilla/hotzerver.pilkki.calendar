@@ -18,4 +18,5 @@ public class ParticipantStatusViewModel
     public required string LastName { get; set; }
     public bool IsAvailable { get; set; }
     public string? Comment { get; set; }
+    public UnavailabilityPriority Priority { get; set; } = UnavailabilityPriority.NotNegotiable;
 }

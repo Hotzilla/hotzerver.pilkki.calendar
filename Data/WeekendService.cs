@@ -34,7 +34,8 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
                     FirstName = p.FirstName,
                     LastName = p.LastName,
                     IsAvailable = un is null,
-                    Comment = un?.Comment
+                    Comment = un?.Comment,
+                    Priority = ResolvePriority(un?.Priority)
                 };
             }).ToList();
             var notOkCount = statuses.Count(x => !x.IsAvailable);
@@ -65,7 +66,8 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
         DateOnly weekendStart,
         bool isAvailable,
         string lastname,
-        string? comment)
+        string? comment,
+        UnavailabilityPriority priority)
     {
         var participant = await db.Participants.FirstOrDefaultAsync(x => x.Id == participantId);
         if (participant is null)
@@ -101,6 +103,8 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
             return null;
         }
 
+        var resolvedPriority = ResolvePriority(priority);
+
         if (existing is null)
         {
             db.Unavailabilities.Add(new Unavailability
@@ -110,17 +114,29 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
                 Season = season,
                 WeekendStart = weekendStart,
                 Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim(),
+                Priority = resolvedPriority,
                 UpdatedAtUtc = DateTime.UtcNow
             });
         }
         else
         {
             existing.Comment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim();
+            existing.Priority = resolvedPriority;
             existing.UpdatedAtUtc = DateTime.UtcNow;
         }
 
         await db.SaveChangesAsync();
         return null;
+    }
+
+    private static UnavailabilityPriority ResolvePriority(UnavailabilityPriority? priority)
+    {
+        if (priority is not null && Enum.IsDefined(priority.Value))
+        {
+            return priority.Value;
+        }
+
+        return UnavailabilityPriority.NotNegotiable;
     }
 
     private static List<DateOnly> BuildWeekends(int year, TripSeason season)

@@ -9,5 +9,6 @@ public class Unavailability
     public TripSeason Season { get; set; }
     public DateOnly WeekendStart { get; set; }
     public string? Comment { get; set; }
+    public UnavailabilityPriority Priority { get; set; } = UnavailabilityPriority.NotNegotiable;
     public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
 }
