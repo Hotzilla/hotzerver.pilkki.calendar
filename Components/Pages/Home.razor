@@ -84,6 +84,11 @@
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
+                @if (!string.IsNullOrWhiteSpace(DialogErrorMessage))
+                {
+                    <div class="error">@DialogErrorMessage</div>
+                }
+
                 <label>
                     Sukunimi (pakollinen)
                     <InputText @bind-Value="Form.LastName" />
@@ -124,6 +129,7 @@
     private DateOnly? SelectedWeekend { get; set; }
     private ParticipantStatusViewModel? SelectedPerson { get; set; }
     private bool IsMarkingOk { get; set; }
+    private string? DialogErrorMessage { get; set; }
     private MarkAvailabilityForm Form { get; set; } = new();
 
     private string DialogTitle => IsMarkingOk ? "Merkitse KÄY" : "Merkitse EI käy";
@@ -194,6 +200,7 @@
 
         DialogOpen = true;
         ErrorMessage = null;
+        DialogErrorMessage = null;
     }
 
     private void CloseDialog()
@@ -202,6 +209,7 @@
         SelectedPerson = null;
         SelectedWeekend = null;
         IsMarkingOk = false;
+        DialogErrorMessage = null;
     }
 
     private async Task SubmitAvailabilityChange()
@@ -222,7 +230,7 @@
 
         if (error is not null)
         {
-            ErrorMessage = error;
+            DialogErrorMessage = error;
             return;
         }
 
