@@ -46,7 +46,14 @@ public class WeekendService(PilkkiDbContext db)
         return result;
     }
 
-    public async Task<string?> MarkNotAvailableAsync(int participantId, int year, TripSeason season, DateOnly weekendStart, string lastname, string? comment)
+    public async Task<string?> SetAvailabilityAsync(
+        int participantId,
+        int year,
+        TripSeason season,
+        DateOnly weekendStart,
+        bool isAvailable,
+        string lastname,
+        string? comment)
     {
         var participant = await db.Participants.FirstOrDefaultAsync(x => x.Id == participantId);
         if (participant is null)
@@ -64,6 +71,17 @@ public class WeekendService(PilkkiDbContext db)
             x.Year == year &&
             x.Season == season &&
             x.WeekendStart == weekendStart);
+
+        if (isAvailable)
+        {
+            if (existing is not null)
+            {
+                db.Unavailabilities.Remove(existing);
+                await db.SaveChangesAsync();
+            }
+
+            return null;
+        }
 
         if (existing is null)
         {
