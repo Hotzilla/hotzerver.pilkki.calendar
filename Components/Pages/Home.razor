@@ -13,7 +13,7 @@
     <section class="filters">
         <label>
             Vuosi
-            <input type="number" min="2024" max="2100" @bind="SelectedYear" @bind:after="LoadDataAsync" />
+            <input type="number" min="2026" max="2100" @bind="SelectedYear" @bind:after="LoadDataAsync" />
         </label>
 
         <label>
@@ -25,6 +25,22 @@
         </label>
     </section>
 
+    @if (Weekends.Count > 0)
+    {
+        <div class="deadline-info @(Weekends[0].IsDeadlineReached ? "deadline-reached" : string.Empty)">
+            <span class="deadline-badge">Määräaika</span>
+            <strong>@Weekends[0].DeadlineDate.ToString("dd.MM.yyyy")</strong>
+            @if (Weekends[0].IsDeadlineReached)
+            {
+                <span>Määräaika on saavutettu. OK/EI käy -vastauksia ei voi enää muokata.</span>
+            }
+            else
+            {
+                <span>OK/EI käy -vastaukset tulee antaa tähän mennessä.</span>
+            }
+        </div>
+    }
+
     @if (!string.IsNullOrWhiteSpace(ErrorMessage))
     {
         <div class="error">@ErrorMessage</div>
@@ -33,13 +49,18 @@
     <section class="weekend-grid">
         @foreach (var weekend in Weekends)
         {
-            <article class="weekend-card">
+            <article class="weekend-card @(ShouldHighlightWeekend(weekend) ? "best-weekend" : string.Empty)">
                 <h2>@WeekendTitle(weekend)</h2>
+                @if (ShouldHighlightWeekend(weekend))
+                {
+                    <p class="best-weekend-label">Suositus: vähiten EI käy -merkintöjä</p>
+                }
                 <div class="names">
                     @foreach (var person in weekend.Participants)
                     {
                         <button type="button" class="name-chip @(person.IsAvailable ? "ok" : "not-ok")"
                                 title="@TooltipText(person)"
+                                disabled="@weekend.IsDeadlineReached"
                                 @onclick="() => OpenMarkDialog(weekend.Friday, person)">
                             @person.FirstName
                         </button>
@@ -86,7 +107,7 @@
 }
 
 @code {
-    private int SelectedYear { get; set; } = DateTime.Now.Year;
+    private int SelectedYear { get; set; } = 2026;
     private TripSeason SelectedSeason { get; set; } = TripSeason.PilkkiI;
     private List<WeekendStatusViewModel> Weekends { get; set; } = [];
     private string? ErrorMessage { get; set; }
@@ -122,6 +143,22 @@
         }
 
         return $"{dateRange} ({string.Join(", ", weekend.HolidayTitles)})";
+    }
+
+    private bool ShouldHighlightWeekend(WeekendStatusViewModel weekend)
+    {
+        if (Weekends.Count == 0 || !IsDeadlineNearOrPassed(weekend.DeadlineDate))
+        {
+            return false;
+        }
+
+        return weekend.NotOkCount == Weekends.Min(x => x.NotOkCount);
+    }
+
+    private static bool IsDeadlineNearOrPassed(DateOnly deadlineDate)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        return deadlineDate <= today.AddDays(14);
     }
 
     private string TooltipText(ParticipantStatusViewModel person)
