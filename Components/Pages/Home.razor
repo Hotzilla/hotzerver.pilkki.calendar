@@ -13,7 +13,7 @@
     <section class="filters">
         <label>
             Vuosi
-            <input type="number" value="@SelectedYear" disabled />
+            <input type="number" min="2026" max="2100" @bind="SelectedYear" @bind:after="LoadDataAsync" />
         </label>
 
         <label>
@@ -27,7 +27,11 @@
 
     @if (Weekends.Count > 0)
     {
-        <p class="deadline-info">Määräaika vastausten antamiselle: <strong>@Weekends[0].DeadlineDate.ToString("dd.MM.yyyy")</strong></p>
+        <div class="deadline-info">
+            <span class="deadline-badge">Määräaika</span>
+            <strong>@Weekends[0].DeadlineDate.ToString("dd.MM.yyyy")</strong>
+            <span>OK/EI käy -vastaukset tulee antaa tähän mennessä.</span>
+        </div>
     }
 
     @if (!string.IsNullOrWhiteSpace(ErrorMessage))
@@ -38,12 +42,11 @@
     <section class="weekend-grid">
         @foreach (var weekend in Weekends)
         {
-            <article class="weekend-card @(IsBestWeekend(weekend) ? "best-weekend" : string.Empty)">
+            <article class="weekend-card @(ShouldHighlightWeekend(weekend) ? "best-weekend" : string.Empty)">
                 <h2>@WeekendTitle(weekend)</h2>
-                <p class="weekend-meta">Ei käy -merkintöjä: <strong>@weekend.NotOkCount</strong></p>
-                @if (IsBestWeekend(weekend))
+                @if (ShouldHighlightWeekend(weekend))
                 {
-                    <p class="best-weekend-label">Vähiten EI käy -merkintöjä</p>
+                    <p class="best-weekend-label">Suositus: vähiten EI käy -merkintöjä</p>
                 }
                 <div class="names">
                     @foreach (var person in weekend.Participants)
@@ -135,9 +138,20 @@
         return $"{dateRange} ({string.Join(", ", weekend.HolidayTitles)})";
     }
 
-    private bool IsBestWeekend(WeekendStatusViewModel weekend)
+    private bool ShouldHighlightWeekend(WeekendStatusViewModel weekend)
     {
-        return Weekends.Count != 0 && weekend.NotOkCount == Weekends.Min(x => x.NotOkCount);
+        if (Weekends.Count == 0 || !IsDeadlineNearOrPassed(weekend.DeadlineDate))
+        {
+            return false;
+        }
+
+        return weekend.NotOkCount == Weekends.Min(x => x.NotOkCount);
+    }
+
+    private static bool IsDeadlineNearOrPassed(DateOnly deadlineDate)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        return deadlineDate <= today.AddDays(14);
     }
 
     private string TooltipText(ParticipantStatusViewModel person)
