@@ -1,0 +1,135 @@
+:root {
+    color-scheme: dark;
+    --bg: #0f1117;
+    --card: #171a22;
+    --muted: #9ea7b8;
+    --text: #e6ebf5;
+    --ok: #1faa59;
+    --notok: #cc334f;
+    --accent: #5f8cff;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: Inter, Segoe UI, Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: radial-gradient(circle at top, #1a2238, var(--bg));
+    color: var(--text);
+}
+
+.layout-shell {
+    min-height: 100vh;
+}
+
+.page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+}
+
+.top-header p {
+    color: var(--muted);
+}
+
+.filters {
+    display: flex;
+    gap: 1rem;
+    margin: 1.25rem 0;
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    color: var(--muted);
+}
+
+input, select, textarea {
+    background: #0e1320;
+    border: 1px solid #293044;
+    border-radius: .5rem;
+    color: var(--text);
+    padding: .55rem .7rem;
+}
+
+.weekend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(275px, 1fr));
+    gap: 1rem;
+}
+
+.weekend-card {
+    background: color-mix(in srgb, var(--card), black 8%);
+    border: 1px solid #2a3042;
+    border-radius: .85rem;
+    padding: 1rem;
+}
+
+.weekend-card h2 {
+    margin-top: 0;
+    font-size: 1.05rem;
+}
+
+.names {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.name-chip {
+    border: none;
+    border-radius: 999px;
+    padding: .45rem .8rem;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.name-chip.ok { background: var(--ok); }
+.name-chip.not-ok { background: var(--notok); }
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.66);
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+}
+
+.modal {
+    background: var(--card);
+    border: 1px solid #343d57;
+    border-radius: .9rem;
+    padding: 1rem;
+    width: min(460px, 100%);
+}
+
+.actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: end;
+    gap: .6rem;
+}
+
+button.primary, button.secondary {
+    border: none;
+    border-radius: .55rem;
+    padding: .5rem .9rem;
+    cursor: pointer;
+}
+
+button.primary { background: var(--accent); color: white; }
+button.secondary { background: #31384d; color: #dfe6f9; }
+
+.error {
+    background: #5b2030;
+    border: 1px solid #a7435c;
+    color: #ffd8df;
+    border-radius: .6rem;
+    padding: .7rem;
+    margin-bottom: 1rem;
+}
