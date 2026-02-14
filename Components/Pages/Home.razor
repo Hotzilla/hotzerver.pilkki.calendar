@@ -34,7 +34,7 @@
         @foreach (var weekend in Weekends)
         {
             <article class="weekend-card">
-                <h2>@weekend.Friday.ToString("dd.MM.") – @weekend.Sunday.ToString("dd.MM.yyyy")</h2>
+                <h2>@WeekendTitle(weekend)</h2>
                 <div class="names">
                     @foreach (var person in weekend.Participants)
                     {
@@ -110,6 +110,18 @@
         ErrorMessage = null;
         Weekends = await WeekendService.GetWeekendStatusesAsync(SelectedYear, SelectedSeason);
         StateHasChanged();
+    }
+
+
+    private static string WeekendTitle(WeekendStatusViewModel weekend)
+    {
+        var dateRange = $"{weekend.Friday:dd.MM.} – {weekend.Sunday:dd.MM.yyyy}";
+        if (weekend.HolidayTitles.Count == 0)
+        {
+            return dateRange;
+        }
+
+        return $"{dateRange} ({string.Join(", ", weekend.HolidayTitles)})";
     }
 
     private string TooltipText(ParticipantStatusViewModel person)
