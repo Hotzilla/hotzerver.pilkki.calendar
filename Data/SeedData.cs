@@ -13,16 +13,15 @@ public static class SeedData
 
         var participants = new[]
         {
-            new Participant { FirstName = "Antti", LastName = "Aalto" },
-            new Participant { FirstName = "Mikko", LastName = "Mäkinen" },
-            new Participant { FirstName = "Janne", LastName = "Järvinen" },
-            new Participant { FirstName = "Teemu", LastName = "Tuominen" },
-            new Participant { FirstName = "Pasi", LastName = "Paananen" },
-            new Participant { FirstName = "Sami", LastName = "Salonen" },
-            new Participant { FirstName = "Timo", LastName = "Tikkanen" },
-            new Participant { FirstName = "Jari", LastName = "Jokinen" },
-            new Participant { FirstName = "Kari", LastName = "Kettunen" },
-            new Participant { FirstName = "Petri", LastName = "Pitkänen" }
+            new Participant { FirstName = "Tuukka", LastName = "DEMO" },
+            new Participant { FirstName = "Sami", LastName = "DEMO" },
+            new Participant { FirstName = "Kristian", LastName = "DEMO" },
+            new Participant { FirstName = "Keijo", LastName = "DEMO" },
+            new Participant { FirstName = "Petri", LastName = "DEMO" },
+            new Participant { FirstName = "Miika", LastName = "DEMO" },
+            new Participant { FirstName = "Hannu", LastName = "DEMO" },
+            new Participant { FirstName = "Janne", LastName = "DEMO" },
+            new Participant { FirstName = "Veli-Matti", LastName = "DEMO" }
         };
 
         db.Participants.AddRange(participants);
