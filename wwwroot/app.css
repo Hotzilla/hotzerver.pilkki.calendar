@@ -148,7 +148,9 @@ input, select, textarea {
     background: rgba(0, 0, 0, 0.66);
     display: grid;
     place-items: center;
+    align-items: start;
     padding: 1rem;
+    overflow-y: auto;
 }
 
 .modal {
@@ -157,6 +159,9 @@ input, select, textarea {
     border-radius: .9rem;
     padding: 1rem;
     width: min(460px, 100%);
+    margin-block: auto;
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
 }
 
 
