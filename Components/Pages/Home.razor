@@ -24,7 +24,10 @@
         <label>
             Reissu
             <select @bind="SelectedSeason" @bind:after="LoadDataAsync">
-                <option value="@TripSeason.PilkkiI">Pilkki I/@SelectedYear (helmi–huhti)</option>
+                @if (ShowPilkkiISeasonOption)
+                {
+                    <option value="@TripSeason.PilkkiI">Pilkki I/@SelectedYear (helmi–huhti)</option>
+                }
                 <option value="@TripSeason.PilkkiII">Pilkki II/@SelectedYear (loka–marras)</option>
             </select>
         </label>
@@ -169,9 +172,24 @@
 
     private async Task LoadDataAsync()
     {
+        if (!ShowPilkkiISeasonOption && SelectedSeason == TripSeason.PilkkiI)
+        {
+            SelectedSeason = TripSeason.PilkkiII;
+        }
+
         ErrorMessage = null;
         Weekends = await WeekendService.GetWeekendStatusesAsync(SelectedYear, SelectedSeason);
         StateHasChanged();
+    }
+
+    private bool ShowPilkkiISeasonOption
+    {
+        get
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var aprilEnd = new DateOnly(SelectedYear, 4, 30);
+            return today <= aprilEnd;
+        }
     }
 
     private static string WeekendTitle(WeekendStatusViewModel weekend)
