@@ -1,6 +1,7 @@
 @page "/"
 @rendermode InteractiveServer
 @inject hotzerver.pilkki.calendar.Data.WeekendService WeekendService
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Pilkki viikonloput</PageTitle>
 
@@ -47,6 +48,21 @@
                 <span>OK/EI käy -vastaukset tulee antaa tähän mennessä.</span>
             }
         </div>
+    }
+
+    @if (ConfirmedSelectedWeekend is not null)
+    {
+        <section class="selected-weekend-celebration" aria-live="polite">
+            <div class="celebration-copy">
+                <span class="celebration-kicker">Valinta on tehty</span>
+                <h2>Pilkkiviikonloppu @SeasonDisplayName on @ConfirmedSelectedWeekend.WeekendStart.ToString("dd.MM.yyyy")</h2>
+                <p>@ConfirmedSelectedWeekend.WeekendStart.ToString("dddd dd.MM.") - @ConfirmedSelectedWeekend.WeekendStart.AddDays(2).ToString("dddd dd.MM.yyyy")</p>
+            </div>
+            <div class="celebration-date">
+                <span>@ConfirmedSelectedWeekend.WeekendStart.ToString("dd")</span>
+                <strong>@ConfirmedSelectedWeekend.WeekendStart.ToString("MM.yyyy")</strong>
+            </div>
+        </section>
     }
 
     @if (!string.IsNullOrWhiteSpace(ErrorMessage))
@@ -157,6 +173,8 @@
     private int SelectedYear { get; set; } = 2026;
     private TripSeason SelectedSeason { get; set; } = TripSeason.PilkkiI;
     private List<WeekendStatusViewModel> Weekends { get; set; } = [];
+    private SelectedWeekend? ConfirmedSelectedWeekend { get; set; }
+    private string? LastCelebratedSelectionKey { get; set; }
     private string? ErrorMessage { get; set; }
 
     private bool DialogOpen { get; set; }
@@ -178,9 +196,34 @@
         }
 
         ErrorMessage = null;
+        ConfirmedSelectedWeekend = await WeekendService.GetSelectedWeekendAsync(SelectedYear, SelectedSeason);
         Weekends = await WeekendService.GetWeekendStatusesAsync(SelectedYear, SelectedSeason);
         StateHasChanged();
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (ConfirmedSelectedWeekend is null)
+        {
+            return;
+        }
+
+        var celebrationKey = $"{ConfirmedSelectedWeekend.Year}-{ConfirmedSelectedWeekend.Season}-{ConfirmedSelectedWeekend.WeekendStart:yyyy-MM-dd}";
+        if (LastCelebratedSelectionKey == celebrationKey)
+        {
+            return;
+        }
+
+        LastCelebratedSelectionKey = celebrationKey;
+        await JSRuntime.InvokeVoidAsync("pilkkiConfetti.fireworks");
+    }
+
+    private string SeasonDisplayName => $"{SelectedSeason switch
+    {
+        TripSeason.PilkkiI => "Pilkki I",
+        TripSeason.PilkkiII => "Pilkki II",
+        _ => SelectedSeason.ToString()
+    }}/{SelectedYear}";
 
     private bool ShowPilkkiISeasonOption
     {

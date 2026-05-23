@@ -7,6 +7,7 @@ public class PilkkiDbContext(DbContextOptions<PilkkiDbContext> options) : DbCont
 {
     public DbSet<Participant> Participants => Set<Participant>();
     public DbSet<Unavailability> Unavailabilities => Set<Unavailability>();
+    public DbSet<SelectedWeekend> SelectedWeekends => Set<SelectedWeekend>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,5 +27,9 @@ public class PilkkiDbContext(DbContextOptions<PilkkiDbContext> options) : DbCont
         modelBuilder.Entity<Unavailability>()
             .Property(u => u.Priority)
             .HasDefaultValue(UnavailabilityPriority.NotNegotiable);
+
+        modelBuilder.Entity<SelectedWeekend>()
+            .HasIndex(s => new { s.Year, s.Season })
+            .IsUnique();
     }
 }

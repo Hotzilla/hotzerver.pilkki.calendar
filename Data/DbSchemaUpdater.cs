@@ -6,6 +6,21 @@ public static class DbSchemaUpdater
 {
     public static void EnsureLatestSchema(PilkkiDbContext db)
     {
+        db.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS SelectedWeekends (
+                Id INTEGER NOT NULL CONSTRAINT PK_SelectedWeekends PRIMARY KEY AUTOINCREMENT,
+                Year INTEGER NOT NULL,
+                Season INTEGER NOT NULL,
+                WeekendStart TEXT NOT NULL,
+                UpdatedAtUtc TEXT NOT NULL
+            );
+            """);
+
+        db.Database.ExecuteSqlRaw("""
+            CREATE UNIQUE INDEX IF NOT EXISTS IX_SelectedWeekends_Year_Season
+            ON SelectedWeekends (Year, Season);
+            """);
+
         if (!ColumnExists(db, "Unavailabilities", "Priority"))
         {
             db.Database.ExecuteSqlRaw("ALTER TABLE Unavailabilities ADD COLUMN Priority INTEGER NOT NULL DEFAULT 1;");

@@ -10,6 +10,13 @@ public class WeekendService(PilkkiDbContext db, HolidayService holidayService)
         return await db.Participants.OrderBy(x => x.FirstName).ToListAsync();
     }
 
+    public async Task<SelectedWeekend?> GetSelectedWeekendAsync(int year, TripSeason season)
+    {
+        return await db.SelectedWeekends
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Year == year && x.Season == season);
+    }
+
     public async Task<List<WeekendStatusViewModel>> GetWeekendStatusesAsync(int year, TripSeason season)
     {
         var weekends = BuildWeekends(year, season);
